@@ -35,8 +35,13 @@ body {
   --surface-soft: #1d333c;
   --text: #f5f8f8;
   --text-soft: #d2dee1;
-  --text-faint: #9db2b9;
+  --text-faint: #b0c0c5;
   --line: rgba(255, 255, 255, 0.1);
+  --font-micro: 10px;
+  --font-caption: 12px;
+  --font-label: 13px;
+  --font-body: 14px;
+  --font-value: 15px;
   position: relative;
   width: 760px;
   overflow: hidden;
@@ -208,7 +213,7 @@ body {
   margin-top: 0;
   color: var(--text-soft);
   font-family: "framdit", sans-serif;
-  font-size: 11px;
+  font-size: var(--font-label);
   line-height: 1;
 }
 
@@ -291,14 +296,14 @@ body {
   align-items: center;
   justify-content: space-between;
   color: var(--text-soft);
-  font-size: 11px;
+  font-size: var(--font-label);
 }
 
 .chain-heading strong,
 .skill-heading strong {
   color: var(--accent);
   font-family: "framdit", sans-serif;
-  font-size: 9px;
+  font-size: var(--font-micro);
   letter-spacing: 0.09em;
 }
 
@@ -361,7 +366,7 @@ body {
   min-width: 0;
   overflow: hidden;
   color: var(--text-soft);
-  font-size: 12px;
+  font-size: var(--font-body);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -379,7 +384,7 @@ body {
   flex: 0 0 auto;
   color: #fff;
   font-family: "framdit", sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -436,7 +441,7 @@ body {
   color: #15252d;
   background: #fff;
   font-family: "framdit", sans-serif;
-  font-size: 10px;
+  font-size: var(--font-caption);
   font-weight: 700;
   line-height: 1;
   text-align: center;
@@ -463,13 +468,13 @@ body {
   height: 15px;
   margin-bottom: 4px;
   color: #fff;
-  font-size: 10px;
+  font-size: var(--font-caption);
 }
 
 .bonus-heading strong {
   color: var(--accent);
   font-family: "framdit", sans-serif;
-  font-size: 8px;
+  font-size: var(--font-micro);
   letter-spacing: 0.12em;
 }
 
@@ -493,7 +498,7 @@ body {
 .bonus-cell span {
   overflow: hidden;
   color: var(--text-soft);
-  font-size: 9px;
+  font-size: var(--font-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -502,7 +507,7 @@ body {
   flex: 0 0 auto;
   color: #fff;
   font-family: "framdit", sans-serif;
-  font-size: 10px;
+  font-size: var(--font-label);
 }
 
 .bonus-zero {
@@ -566,7 +571,7 @@ body {
   position: relative;
   z-index: 1;
   color: #dce7e9;
-  font-size: 12px;
+  font-size: var(--font-body);
   letter-spacing: 0.08em;
 }
 
@@ -602,7 +607,7 @@ body {
 
 .score-rank-badge span {
   color: #afc1c6;
-  font-size: 8px;
+  font-size: var(--font-micro);
   letter-spacing: 0.12em;
 }
 
@@ -622,7 +627,7 @@ body {
   gap: 8px;
   margin-top: 11px;
   color: #aebfc4;
-  font-size: 9px;
+  font-size: var(--font-caption);
 }
 
 .score-meta i {
@@ -652,7 +657,7 @@ body {
   display: flex;
   align-items: center;
   color: #d8e3e6;
-  font-size: 10px;
+  font-size: var(--font-caption);
   font-weight: 700;
   letter-spacing: 0.03em;
 }
@@ -705,7 +710,7 @@ body {
   max-width: 100%;
   overflow: hidden;
   color: #c6d4d8;
-  font-size: 9px;
+  font-size: var(--font-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -713,7 +718,7 @@ body {
 .score-value {
   color: inherit;
   font-family: "framdit", sans-serif;
-  font-size: 12px;
+  font-size: var(--font-body);
   font-weight: 700;
   filter: brightness(1.18) saturate(1.08);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -755,7 +760,7 @@ body {
 
 .section-title span {
   color: rgba(23, 49, 59, 0.8);
-  font-size: 10px;
+  font-size: var(--font-caption);
 }
 
 #equipment-grid {
@@ -806,7 +811,7 @@ body {
 
 .card-eyebrow {
   color: var(--card-accent);
-  font-size: 9px;
+  font-size: var(--font-micro);
   letter-spacing: 0.12em;
 }
 
@@ -816,7 +821,7 @@ body {
   min-height: 35px;
   margin-top: 2px;
   color: #f0d481;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.15;
   -webkit-box-orient: vertical;
@@ -833,14 +838,14 @@ body {
 .weapon-level {
   color: #fff;
   font-family: "framdit", sans-serif;
-  font-size: 10px;
+  font-size: var(--font-caption);
 }
 
 #reson-level {
   padding: 3px 5px;
   border-radius: 3px;
   color: #fff;
-  font-size: 8px;
+  font-size: var(--font-micro);
   line-height: 1;
 }
 
@@ -884,7 +889,7 @@ body {
   display: flex;
   align-items: center;
   color: var(--text-soft);
-  font-size: 11px;
+  font-size: var(--font-label);
 }
 
 .weapon-stat img {
@@ -898,7 +903,7 @@ body {
 .weapon-stat strong {
   color: #fff;
   font-family: "framdit", sans-serif;
-  font-size: 12px;
+  font-size: var(--font-body);
 }
 
 .weapon-effect {
@@ -909,14 +914,14 @@ body {
 
 #weapon-effect-name {
   color: var(--card-accent);
-  font-size: 13px;
+  font-size: var(--font-value);
   font-weight: 700;
 }
 
 #effect-description {
   margin-top: 4px;
   color: #cad8dc;
-  font-size: 10px;
+  font-size: var(--font-caption);
   line-height: 1.42;
   text-align: justify;
 }
@@ -939,7 +944,7 @@ body {
   overflow: hidden;
   min-height: 32px;
   color: #fff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.27;
   -webkit-box-orient: vertical;
@@ -963,13 +968,13 @@ body {
   padding: 2px 5px;
   border: 1px solid currentColor;
   border-radius: 3px;
-  font-size: 9px;
+  font-size: var(--font-micro);
   line-height: 1;
 }
 
 .phantom-no-score {
   color: var(--text-faint);
-  font-size: 10px;
+  font-size: var(--font-caption);
 }
 
 .phantom-visual {
@@ -1006,7 +1011,7 @@ body {
   color: var(--text-soft);
   background: rgba(11, 27, 35, 0.82);
   font-family: "framdit", sans-serif;
-  font-size: 7px;
+  font-size: var(--font-micro);
   letter-spacing: 0.04em;
 }
 
@@ -1019,7 +1024,7 @@ body {
   color: #fff;
   background: rgba(11, 27, 35, 0.88);
   font-family: "framdit", sans-serif;
-  font-size: 9px;
+  font-size: var(--font-micro);
 }
 
 .phantom-attribute {
@@ -1062,7 +1067,7 @@ body {
 .phantom-attribute-key {
   overflow: hidden;
   color: inherit;
-  font-size: 11px;
+  font-size: var(--font-label);
   text-overflow: ellipsis;
   white-space: nowrap;
   filter: brightness(1.12);
@@ -1072,7 +1077,7 @@ body {
   flex: 0 0 auto;
   color: inherit;
   font-family: "framdit", sans-serif;
-  font-size: 12px;
+  font-size: var(--font-body);
   font-weight: 700;
   filter: brightness(1.16) saturate(1.06);
 }
@@ -1108,7 +1113,7 @@ body {
 .damage-caption,
 .damage-target span {
   color: var(--text-faint);
-  font-size: 9px;
+  font-size: var(--font-caption);
   white-space: nowrap;
 }
 
@@ -1123,7 +1128,7 @@ body {
 
 .damage-target strong {
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--font-label);
 }
 
 .damage-grid {
@@ -1155,7 +1160,7 @@ body {
   padding: 6px 8px;
   color: #d1dde0;
   font-family: "framdit", sans-serif;
-  font-size: 12px;
+  font-size: var(--font-body);
   text-align: center;
 }
 
@@ -1166,7 +1171,7 @@ body {
 .damage-grid-row .dmg-name {
   color: var(--text);
   font-family: "Guruwords", sans-serif;
-  font-size: 11px;
+  font-size: var(--font-label);
   font-weight: 600;
   line-height: 1.35;
   text-align: center;
@@ -1181,7 +1186,7 @@ body {
 .damage-grid-head .dmg-name {
   color: var(--text-soft);
   font-family: "Guruwords", sans-serif;
-  font-size: 10px;
+  font-size: var(--font-caption);
   font-weight: 700;
   text-align: center;
 }
