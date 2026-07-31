@@ -5,13 +5,15 @@ import sharp from 'sharp';
 import { _path } from '../model/path.js';
 
 const MEBIBYTE = 1024 * 1024;
-const MAX_SEND_BYTES = Math.floor(3.5 * MEBIBYTE);
-const TARGET_SEND_BYTES = 3 * MEBIBYTE;
+const MAX_SEND_BYTES = MEBIBYTE;
+const TARGET_SEND_BYTES = 900 * 1024;
 const MAX_OUTPUT_WIDTH = 1440;
 // 腾讯图片处理链路要求输出宽高小于 10000px。
 const MAX_OUTPUT_HEIGHT = 9999;
 const MIN_OUTPUT_WIDTH = 720;
-const CACHE_VERSION = 'v5';
+const JPEG_QUALITIES = [82, 76, 70, 64, 58];
+const MAX_RESIZE_ATTEMPTS = 4;
+const CACHE_VERSION = 'v6';
 
 function imageMetadata(metadata) {
     return {
@@ -113,18 +115,21 @@ export async function prepareGuideImage(imagePath) {
     } catch {}
 
     let width = Math.min(metadata.width || MAX_OUTPUT_WIDTH, MAX_OUTPUT_WIDTH);
-    let quality = 82;
     let output = null;
 
-    // 先保留尽可能多的文字清晰度，再依据实际编码体积逐级降宽和质量。
-    for (let attempt = 0; attempt < 8; attempt += 1) {
-        output = await encodeJpeg(imagePath, width, quality);
-        if (output.length <= TARGET_SEND_BYTES) break;
+    // 攻略图包含大量小字：先降低 JPEG 质量，仍超限时才缩小尺寸。
+    compression:
+    for (let resizeAttempt = 0; resizeAttempt < MAX_RESIZE_ATTEMPTS; resizeAttempt += 1) {
+        for (const quality of JPEG_QUALITIES) {
+            output = await encodeJpeg(imagePath, width, quality);
+            if (output.length <= TARGET_SEND_BYTES) break compression;
+        }
 
+        if (width <= MIN_OUTPUT_WIDTH) break;
         const sizeRatio = Math.sqrt(TARGET_SEND_BYTES / output.length);
-        const nextWidth = Math.floor(width * Math.min(0.9, Math.max(0.72, sizeRatio * 0.96)));
+        const nextWidth = Math.floor(width * Math.min(0.95, Math.max(0.78, sizeRatio * 0.98)));
+        if (nextWidth >= width) break;
         width = Math.max(MIN_OUTPUT_WIDTH, nextWidth);
-        quality = Math.max(44, quality - 6);
     }
 
     if (!output || output.length > MAX_SEND_BYTES) {
