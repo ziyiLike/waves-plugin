@@ -8,9 +8,17 @@ const MEBIBYTE = 1024 * 1024;
 const MAX_SEND_BYTES = Math.floor(3.5 * MEBIBYTE);
 const TARGET_SEND_BYTES = 3 * MEBIBYTE;
 const MAX_OUTPUT_WIDTH = 1440;
-const MAX_OUTPUT_HEIGHT = 15000;
 const MIN_OUTPUT_WIDTH = 720;
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v4';
+
+function imageMetadata(metadata) {
+    return {
+        width: metadata.width || 0,
+        height: metadata.height || 0,
+        format: metadata.format || 'unknown',
+        progressive: Boolean(metadata.isProgressive)
+    };
+}
 
 function cacheName(imagePath, stat) {
     return crypto
@@ -20,7 +28,6 @@ function cacheName(imagePath, stat) {
             MAX_SEND_BYTES,
             TARGET_SEND_BYTES,
             MAX_OUTPUT_WIDTH,
-            MAX_OUTPUT_HEIGHT,
             path.resolve(imagePath),
             stat.size,
             stat.mtimeMs
@@ -35,21 +42,21 @@ async function encodeJpeg(imagePath, width, quality) {
         .flatten({ background: '#ffffff' })
         .resize({
             width,
-            height: MAX_OUTPUT_HEIGHT,
-            fit: 'inside',
             withoutEnlargement: true
         })
         .jpeg({
             quality,
-            progressive: true,
-            mozjpeg: true,
+            // QQ Markdown 的图片代理对超长渐进式 JPEG 兼容性不稳定，统一输出基线 JPEG。
+            progressive: false,
+            mozjpeg: false,
+            optimiseCoding: true,
             chromaSubsampling: '4:2:0'
         })
         .toBuffer();
 }
 
 /**
- * 将超出 QQBot 稳定发送范围的攻略长图压缩到独立缓存。
+ * 将攻略图转换为 QQ 图片代理兼容性更好的基线 JPEG，并在必要时压缩。
  * 原始攻略图不会被覆盖；缓存键包含源文件大小和修改时间，可自动失效。
  */
 export async function prepareGuideImage(imagePath) {
@@ -60,16 +67,16 @@ export async function prepareGuideImage(imagePath) {
         failOn: 'none',
         limitInputPixels: false
     }).metadata();
-    const exceedsDimensions =
-        (metadata.width || 0) > MAX_OUTPUT_WIDTH ||
-        (metadata.height || 0) > MAX_OUTPUT_HEIGHT;
+    const exceedsWidth = (metadata.width || 0) > MAX_OUTPUT_WIDTH;
+    const needsBaselineJpeg = metadata.format !== 'jpeg' || Boolean(metadata.isProgressive);
 
-    if (stat.size <= MAX_SEND_BYTES && !exceedsDimensions) {
+    if (stat.size <= MAX_SEND_BYTES && !exceedsWidth && !needsBaselineJpeg) {
         return {
             path: imagePath,
             optimized: false,
             originalBytes: stat.size,
-            bytes: stat.size
+            bytes: stat.size,
+            ...imageMetadata(metadata)
         };
     }
 
@@ -80,11 +87,16 @@ export async function prepareGuideImage(imagePath) {
     try {
         const cacheStat = await fs.promises.stat(cacheFile);
         if (cacheStat.isFile() && cacheStat.size <= MAX_SEND_BYTES) {
+            const cacheMetadata = await sharp(cacheFile, {
+                failOn: 'none',
+                limitInputPixels: false
+            }).metadata();
             return {
                 path: cacheFile,
                 optimized: true,
                 originalBytes: stat.size,
-                bytes: cacheStat.size
+                bytes: cacheStat.size,
+                ...imageMetadata(cacheMetadata)
             };
         }
     } catch {}
@@ -113,11 +125,16 @@ export async function prepareGuideImage(imagePath) {
     }
 
     await fs.promises.writeFile(cacheFile, output);
+    const outputMetadata = await sharp(output, {
+        failOn: 'none',
+        limitInputPixels: false
+    }).metadata();
     return {
         path: cacheFile,
         optimized: true,
         originalBytes: stat.size,
-        bytes: output.length
+        bytes: output.length,
+        ...imageMetadata(outputMetadata)
     };
 }
 

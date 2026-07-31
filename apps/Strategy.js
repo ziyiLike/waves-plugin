@@ -17,6 +17,7 @@ const AUTHORS = [
 
 const GUIDE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
 const BUTTONS_PER_ROW = 7;
+const GUIDE_URL_TTL_MS = 3 * 24 * 60 * 60 * 1000;
 
 function findLocalGuide(directory, roleName) {
     for (const extension of GUIDE_EXTENSIONS) {
@@ -47,6 +48,52 @@ function buildGuideButtons(roleName, guideCount) {
 
 function formatMebibytes(bytes) {
     return `${(bytes / 1024 / 1024).toFixed(2)} MiB`;
+}
+
+function formatImageDetails(image) {
+    const dimensions = image.width && image.height
+        ? `${image.width}x${image.height}`
+        : 'unknown-size';
+    const encoding = image.format === 'jpeg'
+        ? (image.progressive ? 'progressive-jpeg' : 'baseline-jpeg')
+        : image.format;
+    return `${dimensions} ${encoding || 'unknown-format'}`;
+}
+
+/**
+ * QQBot 的 Markdown 图片由腾讯异步抓取，直接注册三天有效的公网 URL，
+ * 避免适配器再次使用 TRSS 默认的一分钟临时地址。
+ */
+async function buildGuideImageSegment(e, image) {
+    const canUseMarkdownUrl =
+        e.adapter_id === 'QQBot' &&
+        typeof globalThis.Bot?.fileToUrl === 'function' &&
+        typeof globalThis.segment?.markdown === 'function' &&
+        image.width > 0 &&
+        image.height > 0;
+
+    if (!canUseMarkdownUrl) return segment.image(image.path);
+
+    try {
+        const imageUrl = await globalThis.Bot.fileToUrl(image.path, {
+            time: GUIDE_URL_TTL_MS,
+            times: false
+        });
+        logger.debug(
+            logger.blue('[WAVES PLUGIN]'),
+            `攻略图公网地址已注册，有效期 3 天: ${path.basename(image.path)}`
+        );
+        return globalThis.segment.markdown(
+            `![攻略 #${image.width}px #${image.height}px](${String(imageUrl)})`
+        );
+    } catch (err) {
+        logger.mark(
+            logger.blue('[WAVES PLUGIN]'),
+            logger.cyan('创建攻略图公网地址失败，回退到普通图片消息'),
+            logger.red(err)
+        );
+        return segment.image(image.path);
+    }
 }
 
 export class Strategy extends plugin {
@@ -123,22 +170,40 @@ export class Strategy extends plugin {
         }
 
         const selectedIndex = requestedIndex - 1;
-        let imagePath = guides[selectedIndex];
+        const selectedGuidePath = guides[selectedIndex];
+        let preparedImage = {
+            path: selectedGuidePath,
+            optimized: false,
+            originalBytes: 0,
+            bytes: 0,
+            width: 0,
+            height: 0,
+            format: 'unknown',
+            progressive: false
+        };
 
         logger.debug(
             logger.blue('[WAVES PLUGIN]'),
-            `发送第 ${requestedIndex}/${guides.length} 份攻略: ${path.basename(imagePath)}`
+            `发送第 ${requestedIndex}/${guides.length} 份攻略: ${path.basename(selectedGuidePath)}`
         );
 
         try {
-            const prepared = await prepareGuideImage(imagePath);
-            imagePath = prepared.path;
-            if (prepared.optimized) {
+            preparedImage = await prepareGuideImage(selectedGuidePath);
+            if (preparedImage.optimized) {
+                const sizeChange = [
+                    formatMebibytes(preparedImage.originalBytes),
+                    formatMebibytes(preparedImage.bytes)
+                ].join(' -> ');
                 logger.mark(
                     logger.blue('[WAVES PLUGIN]'),
                     logger.green(
-                        `攻略图已压缩: ${formatMebibytes(prepared.originalBytes)} -> ${formatMebibytes(prepared.bytes)}`
+                        `攻略图已优化: ${sizeChange}, ${formatImageDetails(preparedImage)}`
                     )
+                );
+            } else {
+                logger.debug(
+                    logger.blue('[WAVES PLUGIN]'),
+                    `攻略图无需优化: ${formatMebibytes(preparedImage.bytes)}, ${formatImageDetails(preparedImage)}`
                 );
             }
         } catch (err) {
@@ -147,9 +212,10 @@ export class Strategy extends plugin {
                 logger.cyan('攻略图片压缩失败，尝试发送原图'),
                 logger.red(err)
             );
+            preparedImage.path = selectedGuidePath;
         }
 
-        const reply = [segment.image(imagePath)];
+        const reply = [await buildGuideImageSegment(e, preparedImage)];
         const buttons = buildGuideButtons(name, guides.length);
         if (buttons) reply.push(buttons);
 
