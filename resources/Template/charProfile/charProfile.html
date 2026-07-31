@@ -120,7 +120,7 @@
                     </div>
                 </div>
                 <div class="score-meta">
-                    <span>{{(data.roleDetail.data.phantomData.equipPhantomList || []).filter(Boolean).length}} 件声骸</span>
+                    <span>{{(data.roleDetail.data.phantomData.equipPhantomList || []).filter(item => !!item).length}} 件声骸</span>
                     <i></i>
                     <span>{{data.roleDetail.data.role.roleName}}专属权重</span>
                 </div>
