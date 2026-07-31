@@ -1,17 +1,3 @@
-@font-face {
-  font-family: "Guruwords";
-  src: url("../../fonts/Guruwords.ttf");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "framdit";
-  src: url("../../fonts/Guruwords.ttf");
-  font-weight: normal;
-  font-style: normal;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -20,11 +6,43 @@
 }
 
 body {
-  font-family: "Guruwords", sans-serif;
+  --font-ui:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei UI",
+    "Microsoft YaHei",
+    "Noto Sans CJK SC",
+    "Noto Sans SC",
+    Arial,
+    sans-serif;
+  font-family: var(--font-ui);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+strong,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: inherit;
 }
 
 #body {
   transform-origin: top left;
+}
+
+#container,
+#container * {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
 }
 
 #container {
@@ -37,11 +55,11 @@ body {
   --text-soft: #d2dee1;
   --text-faint: #b0c0c5;
   --line: rgba(255, 255, 255, 0.1);
-  --font-micro: 10px;
-  --font-caption: 12px;
-  --font-label: 13px;
-  --font-body: 14px;
-  --font-value: 15px;
+  --font-micro: 12px;
+  --font-caption: 14px;
+  --font-label: 15px;
+  --font-body: 16px;
+  --font-value: 18px;
   position: relative;
   width: 760px;
   overflow: hidden;
@@ -96,7 +114,7 @@ body {
 #hero {
   isolation: isolate;
   width: 736px;
-  height: 570px;
+  height: 574px;
   margin: 0 auto;
   overflow: hidden;
   border: 0;
@@ -128,7 +146,7 @@ body {
 }
 
 #hero::after {
-  inset: 0 0 84px 52%;
+  inset: 0 0 88px 52%;
   opacity: 0.12;
   background:
     linear-gradient(30deg, transparent 48%, rgba(255, 255, 255, 0.13) 49%, transparent 50%),
@@ -140,7 +158,7 @@ body {
 #role-pic-container {
   position: absolute;
   z-index: 2;
-  inset: 0 0 84px;
+  inset: 0 0 88px;
 }
 
 #role-pic-container img {
@@ -157,7 +175,7 @@ body {
 .hero-shade {
   position: absolute;
   z-index: 3;
-  inset: 0 0 84px;
+  inset: 0 0 88px;
   background:
     linear-gradient(90deg, rgba(10, 30, 39, 0.94) 0%, rgba(10, 30, 39, 0.82) 37%, rgba(10, 30, 39, 0.28) 59%, transparent 78%),
     linear-gradient(0deg, rgba(9, 27, 35, 0.42) 0%, transparent 24%),
@@ -191,8 +209,7 @@ body {
   overflow: hidden;
   min-width: 0;
   color: #fff;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 38px;
   line-height: 1.02;
   letter-spacing: 0.01em;
   text-overflow: ellipsis;
@@ -212,7 +229,6 @@ body {
   min-width: 0;
   margin-top: 0;
   color: var(--text-soft);
-  font-family: "framdit", sans-serif;
   font-size: var(--font-label);
   line-height: 1;
 }
@@ -302,7 +318,6 @@ body {
 .chain-heading strong,
 .skill-heading strong {
   color: var(--accent);
-  font-family: "framdit", sans-serif;
   font-size: var(--font-micro);
   letter-spacing: 0.09em;
 }
@@ -349,7 +364,7 @@ body {
   justify-content: space-between;
   gap: 6px;
   min-width: 0;
-  height: 35px;
+  height: 37px;
   padding: 0 8px;
   border-radius: 5px;
   background: rgba(6, 19, 26, 0.25);
@@ -383,9 +398,7 @@ body {
 .attr-val {
   flex: 0 0 auto;
   color: #fff;
-  font-family: "framdit", sans-serif;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-value);
 }
 
 .attr-zero .attr-key,
@@ -440,9 +453,7 @@ body {
   border-radius: 4px;
   color: #15252d;
   background: #fff;
-  font-family: "framdit", sans-serif;
   font-size: var(--font-caption);
-  font-weight: 700;
   line-height: 1;
   text-align: center;
 }
@@ -453,7 +464,7 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
-  height: 84px;
+  height: 88px;
   padding: 7px 12px;
   border: 0;
   background:
@@ -473,7 +484,6 @@ body {
 
 .bonus-heading strong {
   color: var(--accent);
-  font-family: "framdit", sans-serif;
   font-size: var(--font-micro);
   letter-spacing: 0.12em;
 }
@@ -490,7 +500,7 @@ body {
   justify-content: space-between;
   gap: 4px;
   min-width: 0;
-  height: 24px;
+  height: 25px;
   padding: 0 7px;
   background: rgba(255, 255, 255, 0.035);
 }
@@ -506,7 +516,6 @@ body {
 .bonus-cell strong {
   flex: 0 0 auto;
   color: #fff;
-  font-family: "framdit", sans-serif;
   font-size: var(--font-label);
 }
 
@@ -560,9 +569,7 @@ body {
   right: -7px;
   bottom: -13px;
   color: var(--score-color);
-  font-family: "framdit", sans-serif;
   font-size: 72px;
-  font-weight: 700;
   line-height: 1;
   opacity: 0.045;
 }
@@ -586,9 +593,7 @@ body {
 
 .total-score-value {
   color: var(--score-color);
-  font-family: "framdit", sans-serif;
-  font-size: 43px;
-  font-weight: 700;
+  font-size: 48px;
   line-height: 1;
   letter-spacing: -0.05em;
   text-shadow: 0 0 8px var(--score-color);
@@ -614,8 +619,7 @@ body {
 .score-rank-badge strong {
   margin-top: 2px;
   color: var(--score-color);
-  font-family: "framdit", sans-serif;
-  font-size: 24px;
+  font-size: 28px;
   line-height: 1;
 }
 
@@ -644,8 +648,8 @@ body {
 
 .score-group {
   display: grid;
-  grid-template-columns: 68px 1fr;
-  min-height: 52px;
+  grid-template-columns: 76px 1fr;
+  min-height: 56px;
 }
 
 .score-group:last-child {
@@ -658,17 +662,11 @@ body {
   align-items: center;
   color: #d8e3e6;
   font-size: var(--font-caption);
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .score-group-label::before {
-  content: "";
-  width: 4px;
-  height: 4px;
-  margin-right: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.52);
+  content: none;
 }
 
 .score-group-items {
@@ -717,9 +715,7 @@ body {
 
 .score-value {
   color: inherit;
-  font-family: "framdit", sans-serif;
   font-size: var(--font-body);
-  font-weight: 700;
   filter: brightness(1.18) saturate(1.08);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
@@ -754,7 +750,7 @@ body {
 }
 
 .section-title h2 {
-  font-size: 19px;
+  font-size: 23px;
   letter-spacing: 0.03em;
 }
 
@@ -821,8 +817,7 @@ body {
   min-height: 35px;
   margin-top: 2px;
   color: #f0d481;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
   line-height: 1.15;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -837,7 +832,6 @@ body {
 
 .weapon-level {
   color: #fff;
-  font-family: "framdit", sans-serif;
   font-size: var(--font-caption);
 }
 
@@ -880,7 +874,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 25px;
+  min-height: 28px;
   padding: 0 7px;
   background: rgba(255, 255, 255, 0.035);
 }
@@ -902,7 +896,6 @@ body {
 
 .weapon-stat strong {
   color: #fff;
-  font-family: "framdit", sans-serif;
   font-size: var(--font-body);
 }
 
@@ -915,7 +908,6 @@ body {
 #weapon-effect-name {
   color: var(--card-accent);
   font-size: var(--font-value);
-  font-weight: 700;
 }
 
 #effect-description {
@@ -944,8 +936,7 @@ body {
   overflow: hidden;
   min-height: 32px;
   color: #fff;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 17px;
   line-height: 1.27;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -956,11 +947,10 @@ body {
   align-items: baseline;
   gap: 6px;
   margin-top: 5px;
-  font-family: "framdit", sans-serif;
 }
 
 .phantom-rank-score strong {
-  font-size: 16px;
+  font-size: 19px;
   text-shadow: 0 0 8px currentColor;
 }
 
@@ -1010,7 +1000,6 @@ body {
   border-radius: 3px;
   color: var(--text-soft);
   background: rgba(11, 27, 35, 0.82);
-  font-family: "framdit", sans-serif;
   font-size: var(--font-micro);
   letter-spacing: 0.04em;
 }
@@ -1023,7 +1012,6 @@ body {
   border-radius: 3px;
   color: #fff;
   background: rgba(11, 27, 35, 0.88);
-  font-family: "framdit", sans-serif;
   font-size: var(--font-micro);
 }
 
@@ -1050,14 +1038,13 @@ body {
   justify-content: space-between;
   gap: 7px;
   min-width: 0;
-  min-height: 24px;
+  min-height: 28px;
   padding: 0 6px;
 }
 
 .main-prop {
   color: #fff;
   background: rgba(238, 208, 116, 0.075);
-  font-weight: 700;
 }
 
 .sub-prop:nth-child(odd) {
@@ -1076,9 +1063,7 @@ body {
 .phantom-attribute-value {
   flex: 0 0 auto;
   color: inherit;
-  font-family: "framdit", sans-serif;
   font-size: var(--font-body);
-  font-weight: 700;
   filter: brightness(1.16) saturate(1.06);
 }
 
@@ -1140,7 +1125,7 @@ body {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   align-items: center;
-  min-height: 34px;
+  min-height: 38px;
 }
 
 .damage-grid-row:nth-child(odd):not(.damage-grid-head) {
@@ -1159,7 +1144,6 @@ body {
   min-width: 0;
   padding: 6px 8px;
   color: #d1dde0;
-  font-family: "framdit", sans-serif;
   font-size: var(--font-body);
   text-align: center;
 }
@@ -1170,30 +1154,25 @@ body {
 
 .damage-grid-row .dmg-name {
   color: var(--text);
-  font-family: "Guruwords", sans-serif;
   font-size: var(--font-label);
-  font-weight: 600;
   line-height: 1.35;
   text-align: center;
 }
 
 .damage-grid-head {
-  min-height: 36px;
+  min-height: 40px;
   background: rgba(6, 18, 24, 0.5);
 }
 
 .damage-grid-head > div,
 .damage-grid-head .dmg-name {
   color: var(--text-soft);
-  font-family: "Guruwords", sans-serif;
   font-size: var(--font-caption);
-  font-weight: 700;
   text-align: center;
 }
 
 .damage-grid-row .dmg-expected {
   color: #f0d481;
-  font-weight: 700;
 }
 
 .damage-grid-row.heal-row .dmg-expected {
@@ -1214,8 +1193,7 @@ body {
   width: 100%;
   margin-top: 12px;
   color: rgba(20, 49, 59, 0.7);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 14px;
   text-align: center;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
 }
