@@ -117,8 +117,18 @@ export class Strategy extends plugin {
         }
 
         const requestedIndex = Number.parseInt(requestedGuide || '1', 10);
-        const selectedIndex = Math.min(Math.max(requestedIndex, 1), guides.length) - 1;
+        if (!Number.isInteger(requestedIndex) || requestedIndex < 1 || requestedIndex > guides.length) {
+            await e.reply(`第 ${requestedGuide} 份攻略暂时不可用，请重新发送“~${name}攻略”刷新列表`);
+            return true;
+        }
+
+        const selectedIndex = requestedIndex - 1;
         let imagePath = guides[selectedIndex];
+
+        logger.debug(
+            logger.blue('[WAVES PLUGIN]'),
+            `发送第 ${requestedIndex}/${guides.length} 份攻略: ${path.basename(imagePath)}`
+        );
 
         try {
             const prepared = await prepareGuideImage(imagePath);

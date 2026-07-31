@@ -2,12 +2,14 @@ import puppeteer from '../../../lib/puppeteer/puppeteer.js';
 import Config from './Config.js';
 import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { pluginRoot, _path } from '../model/path.js';
 
 const GUIDE_SERVER = 'https://guide-server.aki-game.com';
 const GUIDE_PAGE_URL = 'https://mcguide.kurogames.com/zh-Hans';
+const SCREENSHOT_CACHE_VERSION = 'v2';
 
 const guideApi = axios.create();
 
@@ -21,6 +23,47 @@ guideApi.interceptors.request.use(async config => {
 }, error => Promise.reject(error));
 
 const wait = (ms) => new Promise(r => setTimeout(r, ms));
+
+function getScreenshotCacheFile(cacheDir, guide) {
+    const guideId = String(guide.guideId);
+    const signature = crypto
+        .createHash('sha1')
+        .update(JSON.stringify([
+            SCREENSHOT_CACHE_VERSION,
+            guideId,
+            guide.modifiedAt || 0,
+            guide.title || '',
+            guide.source || '',
+            guide.desc || ''
+        ]))
+        .digest('hex')
+        .slice(0, 12);
+
+    return path.join(cacheDir, `${guideId}-${signature}.jpg`);
+}
+
+async function getFileDigest(filePath) {
+    const hash = crypto.createHash('sha256');
+    const stream = fs.createReadStream(filePath);
+    for await (const chunk of stream) hash.update(chunk);
+    return hash.digest('hex');
+}
+
+async function registerUniqueScreenshot(result, imageHashes, guideId, filePath) {
+    try {
+        const digest = await getFileDigest(filePath);
+        if (imageHashes.has(digest)) {
+            result.set(guideId, null);
+            return false;
+        }
+        imageHashes.add(digest);
+    } catch {
+        // 哈希失败不应阻断攻略发送，仍保留这张已成功生成的图片。
+    }
+
+    result.set(guideId, filePath);
+    return true;
+}
 
 class CommunityGuide {
     constructor() {
@@ -40,6 +83,7 @@ class CommunityGuide {
 
     async captureGuideScreenshots(roleGbId, guides) {
         const result = new Map();
+        const imageHashes = new Set();
 
         const doCapture = async () => {
             const cacheDir = path.join(_path, 'data', 'wavesStrategy');
@@ -47,12 +91,21 @@ class CommunityGuide {
                 fs.mkdirSync(cacheDir, { recursive: true });
             }
 
-            await this._ensureBrowser();
-
             for (const guide of guides) {
-                const cacheFile = path.join(cacheDir, `${guide.guideId}.jpg`);
+                const cacheFile = getScreenshotCacheFile(cacheDir, guide);
                 if (fs.existsSync(cacheFile)) {
-                    result.set(guide.guideId, cacheFile);
+                    const isUnique = await registerUniqueScreenshot(
+                        result,
+                        imageHashes,
+                        guide.guideId,
+                        cacheFile
+                    );
+                    if (!isUnique) {
+                        logger.mark(
+                            logger.blue('[WAVES PLUGIN]'),
+                            logger.yellow(`跳过重复社区攻略截图: ${guide.guideId}`)
+                        );
+                    }
                     continue;
                 }
 
@@ -61,7 +114,7 @@ class CommunityGuide {
                     const resp = await guideApi.get(`${GUIDE_SERVER}/introduction/info`, {
                         params: { roleGbId, id: guide.guideId }
                     });
-                    if (resp.data.code === 200) {
+                    if (resp.data?.code === 200 && resp.data.data) {
                         info = this._parse(resp.data.data);
                     }
                 } catch (err) {
@@ -109,8 +162,20 @@ class CommunityGuide {
 
                     const img = await page.screenshot({ fullPage: true, type: 'jpeg', quality: 88 });
                     fs.writeFileSync(cacheFile, img);
-                    result.set(guide.guideId, cacheFile);
-                    logger.mark(logger.blue('[WAVES PLUGIN]'), logger.green(`社区攻略截图成功: ${guide.guideId}`));
+                    const isUnique = await registerUniqueScreenshot(
+                        result,
+                        imageHashes,
+                        guide.guideId,
+                        cacheFile
+                    );
+                    if (isUnique) {
+                        logger.mark(logger.blue('[WAVES PLUGIN]'), logger.green(`社区攻略截图成功: ${guide.guideId}`));
+                    } else {
+                        logger.mark(
+                            logger.blue('[WAVES PLUGIN]'),
+                            logger.yellow(`跳过重复社区攻略截图: ${guide.guideId}`)
+                        );
+                    }
                 } catch (err) {
                     result.set(guide.guideId, null);
                     logger.mark(logger.blue('[WAVES PLUGIN]'), logger.cyan(`社区攻略截图失败: ${guide.guideId}`), logger.red(err.message));
@@ -126,6 +191,8 @@ class CommunityGuide {
     }
 
     _parse(d) {
+        if (!d || typeof d !== 'object') return null;
+
         const bt = (d.baseTexts || d.texts || []).find(t => t.language === 'zh-Hans') || {};
 
         // 属性推荐
@@ -1127,12 +1194,29 @@ ${strategySection}
         try {
             const resp = await guideApi.get(`${GUIDE_SERVER}/introduction/list`, { params: { roleGbId } });
             if (resp.data.code === 200) {
-                return (resp.data.data || []).map(item => {
-                    let title = '', source = '', desc = '';
-                    for (const t of (item.texts || [])) {
-                        if (t.language === 'zh-Hans') { title = t.introductionName || ''; source = t.introductionSource || ''; desc = t.introductionDescription || ''; break; }
-                    }
-                    return { guideId: item.id, title, source, desc, illustrationUrl: item.role?.illustrationPictureUrl || '', cardUrl: item.role?.cardPictureUrl || '', roleName: (item.role?.texts || []).find(t => t.language === 'zh-Hans')?.name || '', likeCount: item.likeCount || 0, collectCount: item.collectCount || 0 };
+                return (resp.data.data || []).flatMap(item => {
+                    const text = (item.texts || []).find(t => t.language === 'zh-Hans');
+                    if (!text || item.id == null) return [];
+
+                    const title = (text.introductionName || '').trim();
+                    const source = (text.introductionSource || '').trim();
+                    const desc = (text.introductionDescription || '').trim();
+
+                    // 攻略站会混入只有外语内容、简中字段全空的条目，不应为其生成按钮。
+                    if (!title && !source && !desc) return [];
+
+                    return [{
+                        guideId: item.id,
+                        modifiedAt: item.modifiedAt || 0,
+                        title,
+                        source,
+                        desc,
+                        illustrationUrl: item.role?.illustrationPictureUrl || '',
+                        cardUrl: item.role?.cardPictureUrl || '',
+                        roleName: (item.role?.texts || []).find(t => t.language === 'zh-Hans')?.name || '',
+                        likeCount: item.likeCount || 0,
+                        collectCount: item.collectCount || 0
+                    }];
                 });
             }
             return [];
