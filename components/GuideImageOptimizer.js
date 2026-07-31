@@ -8,8 +8,10 @@ const MEBIBYTE = 1024 * 1024;
 const MAX_SEND_BYTES = Math.floor(3.5 * MEBIBYTE);
 const TARGET_SEND_BYTES = 3 * MEBIBYTE;
 const MAX_OUTPUT_WIDTH = 1440;
+// 腾讯图片处理链路要求输出宽高小于 10000px。
+const MAX_OUTPUT_HEIGHT = 9999;
 const MIN_OUTPUT_WIDTH = 720;
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 
 function imageMetadata(metadata) {
     return {
@@ -28,6 +30,7 @@ function cacheName(imagePath, stat) {
             MAX_SEND_BYTES,
             TARGET_SEND_BYTES,
             MAX_OUTPUT_WIDTH,
+            MAX_OUTPUT_HEIGHT,
             path.resolve(imagePath),
             stat.size,
             stat.mtimeMs
@@ -42,6 +45,8 @@ async function encodeJpeg(imagePath, width, quality) {
         .flatten({ background: '#ffffff' })
         .resize({
             width,
+            height: MAX_OUTPUT_HEIGHT,
+            fit: 'inside',
             withoutEnlargement: true
         })
         .jpeg({
@@ -68,9 +73,15 @@ export async function prepareGuideImage(imagePath) {
         limitInputPixels: false
     }).metadata();
     const exceedsWidth = (metadata.width || 0) > MAX_OUTPUT_WIDTH;
+    const exceedsHeight = (metadata.height || 0) > MAX_OUTPUT_HEIGHT;
     const needsBaselineJpeg = metadata.format !== 'jpeg' || Boolean(metadata.isProgressive);
 
-    if (stat.size <= MAX_SEND_BYTES && !exceedsWidth && !needsBaselineJpeg) {
+    if (
+        stat.size <= MAX_SEND_BYTES &&
+        !exceedsWidth &&
+        !exceedsHeight &&
+        !needsBaselineJpeg
+    ) {
         return {
             path: imagePath,
             optimized: false,
