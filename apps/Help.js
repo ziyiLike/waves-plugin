@@ -4,6 +4,18 @@ import { style } from '../resources/help/imgs/config.js';
 import Config from '../components/Config.js';
 import _ from 'lodash';
 
+function buildLoginButton() {
+    if (typeof globalThis.segment?.button !== 'function') return null;
+
+    try {
+        return globalThis.segment.button([
+            { text: '开始登录', callback: '~登录' }
+        ]);
+    } catch {
+        return null;
+    }
+}
+
 export class Help extends plugin {
     constructor() {
         super({
@@ -435,14 +447,13 @@ export class Help extends plugin {
     }
 
     async bindHelp(e) {
-        const helpStep = [
-            { message: '1.手机下载库街区APP（下载地址：https://www.kurobbs.com/download.html）' },
-            { message: '2.首次使用请先登录库街区APP，并检查数据终端中各项数据是否开启对外展示开关' },
-            { message: '3.退出库街区登录，再次获取验证码（此时不要登录库街区APP）' },
-            { message: '4.发送 ~登录<手机号>:<验证码> 即可完成登录(例：~登录17041039503:1865)，注意：手机号验证码之间有冒号间隔' },
-            { message: '机器人可以和库街区APP一起使用，互不干扰，但是在网页登录库街区账号会导致机器人Token失效' },
-        ]
-        await e.reply(await Bot.makeForwardMsg(helpStep))
+        const message = [
+            '点击下方按钮开始登录，复制机器人返回的地址到浏览器，并按页面提示完成操作。',
+            '登录地址在 10 分钟内有效。登录前，请在库街区数据终端开启需要查询项目的对外展示开关。'
+        ].join('\n\n');
+        const button = buildLoginButton();
+
+        await e.reply(button ? [message, button] : `${message}\n\n发送 ~登录 开始登录。`);
         return true
     }
 

@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import plugin from '../../../lib/plugins/plugin.js'
 import Config from "../components/Config.js";
 import Server from "../components/Server.js";
@@ -41,24 +42,14 @@ export class Bind extends plugin {
     }
 
     async loginAcc(e) {
-        const [, message] = e.msg.match(this.rule[1].reg);
+        const [, rawMessage = ""] = e.msg.match(this.rule[1].reg);
+        const message = rawMessage.trim();
         const waves = new Waves();
         let token;
-        let warningMsg = "";
         let did = "";
 
-        if (message.startsWith("eyJhbGc")) {
-            if (e.isGroup) e.group.recallMsg(e.message_id)
-            const cleanMessage = message.replace(/\s+/g, ''); // 移除所有空格
-                        if (cleanMessage.includes(",")) {
-                [token, did] = cleanMessage.split(",", 2);
-            } else {
-                token = cleanMessage;
-                warningMsg = "\n警告：未提供 did 字段，会导致其他登录设备下线！";
-            }
-
-        } else if (message) {
-            if (e.isGroup) e.group.recallMsg(e.message_id)
+        if (message) {
+            if (e.isGroup) await e.group.recallMsg(e.message_id);
             const [mobile, _, code] = message.split(/(:|：)/);
             if (!mobile || !code) {
                 return await e.reply("请输入正确的手机号与验证码\n使用[~登录帮助]查看登录方法！");
@@ -73,9 +64,12 @@ export class Bind extends plugin {
             if (!Config.getConfig().allow_login) {
                 return await e.reply("当前网页登录功能已被禁用，请联系主人前往插件配置项中开启或使用其他登录方式进行登录\n使用[~登录帮助]查看其他登录方法！");
             }
-            const id = Math.random().toString(36).substring(2, 12);
+            const id = randomBytes(16).toString('hex');
             Server.data[id] = { user_id: e.user_id };
-            await e.reply(`请复制登录地址到浏览器打开：\n${Config.getConfig().public_link}/login/${id}\n您的识别码为【${e.user_id}】\n登录地址10分钟内有效`);
+            await e.reply(
+                `请复制登录地址到浏览器打开：\n${Config.getConfig().public_link}/login/${id}\n` +
+                `您的识别码为【${e.user_id}】\n登录地址10分钟内有效`
+            );
 
             const timeout = Date.now() + 10 * 60 * 1000;
             while (!Server.data[id].token && Date.now() < timeout) {
@@ -90,7 +84,8 @@ export class Bind extends plugin {
             delete Server.data[id];
         }
 
-        const gameData = await waves.getGameData(token);
+        // Token 与 DID 是同一设备会话的一对凭证，登录后的首个请求也必须同时携带。
+        const gameData = await waves.getGameData(token, did);
         if (!gameData.status) {
             return await e.reply(`登录失败！原因：${gameData.msg}\n使用[~登录帮助]查看登录方法！`);
         }
@@ -102,18 +97,17 @@ export class Bind extends plugin {
         await redis.set(`Yunzai:waves:bind:${e.user_id}`, gameData.data.roleId);
 
         Config.setUserData(e.user_id, userConfig);
-        await e.reply(`${gameData.data.roleName}(${gameData.data.roleId}) 登录成功！${warningMsg}`, true);
+        await e.reply(`${gameData.data.roleName}(${gameData.data.roleId}) 登录成功！`, true);
 
-        const tokenList = []
-        if (Config.getConfig().link_ww && !message.startsWith("eyJhbGc") && did) {
-                    tokenList.push({ message: `直接复制下面内容发送即可登录ww` })
-                    tokenList.push({ message: `ww添加token${token},${did}` })
+        const tokenList = [];
+        if (Config.getConfig().link_ww && did) {
+            tokenList.push({ message: `直接复制下面内容发送即可登录ww` });
+            tokenList.push({ message: `ww添加token${token},${did}` });
         }
         if (tokenList.length > 0) {
-            if (e.isGroup && Config.getConfig().allow_group_token_display){
+            if (e.isGroup && Config.getConfig().allow_group_token_display) {
                 await e.reply(await Bot.makeForwardMsg(tokenList), false, { recallMsg: 10 });
-            }
-            else if (!e.isGroup){
+            } else if (!e.isGroup) {
                 await e.reply(await Bot.makeForwardMsg(tokenList));
             }
         }

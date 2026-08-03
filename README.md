@@ -6,7 +6,7 @@
 
 - 一个适用于 [Yunzai 系列机器人框架](https://github.com/yhArcadia/Yunzai-Bot-plugins-index) 的鸣潮游戏数据查询插件（原版目前是暂停维护状态）原版请前往https://github.com/erzaozi/waves-plugin.git 查看
 
-- 支持手机验证码登录或 Token 登录，支持查询玩家、日常、数据坞、抽卡等游戏数据
+- 支持通过 `~登录` 完成网页登录，支持查询玩家、日常、数据坞、抽卡等游戏数据
 
 - **使用中遇到问题请加 QQ 群咨询：[707331865](https://qm.qq.com/q/TXTIS9KhO2)**
 
@@ -242,7 +242,7 @@ pnpm install --filter=waves-plugin
 
 | 命令      | 功能                       | 示例                                                                                                |
 | --------- | -------------------------- | --------------------------------------------------------------------------------------------------- |
-| ~登录     | 登录账户 Token             | ![renderings](https://cdn.jsdelivr.net/gh/erzaozi/waves-plugin@main/resources/readme/Bind.png)      |
+| ~登录     | 登录库街区账号             | ![renderings](https://cdn.jsdelivr.net/gh/erzaozi/waves-plugin@main/resources/readme/Bind.png)      |
 | ~卡片     | 获取用户详细信息           | ![renderings](https://cdn.jsdelivr.net/gh/erzaozi/waves-plugin@main/resources/readme/User.png)      |
 | ~签到     | 库街区签到                 | ![renderings](https://cdn.jsdelivr.net/gh/erzaozi/waves-plugin@main/resources/readme/SignIn.png)    |
 | ~体力     | 获取用户日常数据卡片       | ![renderings](https://cdn.jsdelivr.net/gh/erzaozi/waves-plugin@main/resources/readme/Sanity.png)    |
